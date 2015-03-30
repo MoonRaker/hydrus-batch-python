@@ -5,7 +5,8 @@
 
 #import tkSimpleDialog
 #import tkFileDialog
-from tkinter import *
+# from tkinter import *
+from Tkinter import *
 ## import messageBox
 import shutil
 import os
