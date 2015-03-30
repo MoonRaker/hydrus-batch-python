@@ -109,9 +109,9 @@ class SELECTORIN:
     def addMat(self,numMat=1):
         headings = self.lines[25].split()
         values = self.lines[25+1].split()
-        print len(self.lines)
+        print(len(self.lines))
         [self.lines.insert(25+1,self.lines[25+1]) for i in range(numMat-1)]
-        print len(self.lines)
+        print(len(self.lines))
 
         self.update()
                         

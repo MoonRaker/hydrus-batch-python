@@ -8,7 +8,7 @@ from hydrusEXE import *
 # from IN_Class import *
 # from OUT_Class import *
 # from WC_Class import *
-from hydrus.wc import *
+from utils.wc import *
 from hydrus.infiles import *
 from hydrus.outfiles import *
 
@@ -27,7 +27,7 @@ import cPickle
 def runCropModel():
     srcDrive = "C:\\Derek\\"
 
-    method = 3 # 1 = Single HYDRUS run, 2 = simple single run, 3 = Many Runs, ? = MonteCarlo, 4 = Ensemble
+    method = 99 # 1 = Single HYDRUS run, 2 = simple single run, 3 = Many Runs, ? = MonteCarlo, 4 = Ensemble
 
     expYear = '04'
 
@@ -43,7 +43,6 @@ def runCropModel():
     exp = 'SW605_FreeDrainage'
     # exp = 'SW605_InfOnly'
     # exp = 'SW605'
-    
     
 
     # Experiment File location
@@ -147,7 +146,7 @@ def runCropModel():
 ##        hydrus.outputResults("M_DSSATSoils",str(1))
 ##        hydrus.outputResults("Wheat - Optimized",str(1))
         hydrusEXE.outputResults("Crop - Homogeneous",str(soil))
-        print 'Done...'
+        print('Done...')
 
         
     elif method == 2:
@@ -206,9 +205,9 @@ def runCropModel():
         for ind in range(numSoils):
 ##            soil = soils[ind]
             soil = ind
-            print '###############################'
-            print 'Soil: ' + str(soil) 
-            print '###############################'
+            print('###############################')
+            print('Soil: ' + str(soil))
+            print('###############################')
              
             
 ##                paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
@@ -231,7 +230,7 @@ def runCropModel():
             # fileLocation = hydrus.outputResults("No Crop - Homogeneous",str(soil))
             fileLocation = hydrusEXE.outputResults("ROSETTA - 2 Percent",str(soil))
 
-        print 'Done...'        
+        print('Done...')
 
     # Run the simulation in Ensemble Mode - SimpleEnsemble ( aka Normal Hydrus Simulation)
     elif method == 4:
@@ -251,11 +250,11 @@ def runCropModel():
 ##                updateProfileDAT(ExpFileLocation,numLayers) # not needed, hNew gets overwritten in HYDRUS
                 updateEnsembleIN(ExpFileLocation,numLayers)
                 
-            print "Start of Trial ",trial,'... '
+            print("Start of Trial ",trial,'... ')
             hydrus.run_hydrus(noCMDWindow,str(1))
             fileLocation = hydrus.outputResults("SimpleEnsemble\\Trials",str(trial))
             
-        print 'Done...'
+        print('Done...')
 
     # Run the simulation in Ensemble Mode - CropModel
     elif method == 5:
@@ -276,11 +275,11 @@ def runCropModel():
 ##                updateProfileDAT(ExpFileLocation,numLayers) # not needed, hNew gets overwritten in HYDRUS
                 updateEnsembleIN(ExpFileLocation,numLayers)
 
-            print "Start of Trial ",trial,'... '
+            print("Start of Trial ",trial,'... ')
             hydrus.run_hydrus(noCMDWindow,str(1))
             fileLocation = hydrus.outputResults("Ensemble\\Trials",str(trial))
 
-        print 'Done...'
+        print('Done...')
 
     # Run the simulation in Ensemble Mode, multiple models
     elif method == 6:
@@ -317,11 +316,11 @@ def runCropModel():
                              'Trial':trial,}
                 setSelectorParams(ExpFileLocation,paramDict)
 
-                print "Start of Trial ",trial,'... '
+                print("Start of Trial ",trial,'... ')
                 hydrus.run_hydrus(noCMDWindow,str(1))
                 fileLocation = hydrus.outputResults("Ensemble\\Simulation "+str(model)+"\\Trials",str(trial))
 
-        print 'Done...'
+        print('Done...')
 
 
     # runs the ensemble with assimilation
@@ -363,7 +362,7 @@ def runCropModel():
                              'tMax':trial+1,'tInit':trial,'MPL':trial+1,'Trial':trial}
                 setSelectorParams(ExpFileLocation,paramDict)
                     
-                print "Start of Trial ",trial,'... '
+                print("Start of Trial ",trial,'... ')
                 hydrus.run_hydrus(noCMDWindow,str(1))
                 fileLocation = hydrus.outputResults("Ensemble\\Simulation "+str(model)+"\\Trials",str(trial))
 
@@ -373,7 +372,7 @@ def runCropModel():
 
             calculateVariances(directory,numModels,trial,dirResults)
 
-        print 'Done...'
+        print('Done...')
 
         
     # runs the ensemble with assimilation for a non-cropped HYDRUS
@@ -473,7 +472,7 @@ def runCropModel():
                              'tMax':trial+1,'tInit':trial,'MPL':trial+1,'Trial':trial}
                 setSelectorParams(ExpFileLocation,paramDict)
                     
-                print "Start of Trial ",trial,'... '
+                print("Start of Trial ",trial,'... ')
                 hydrus.run_hydrus(noCMDWindow,str(1))
                 fileLocation = hydrus.outputResults("Ensemble\\Simulation "+str(model)+"\\Trials",str(trial))
 
@@ -483,12 +482,12 @@ def runCropModel():
             if trial < numDays-1:
                 calculateVariances(directory,numModels,trial,dirResults)
 
-        print 'Done...'
+        print('Done...')
 
     stopTime = time.clock()
     lengthOfRun = stopTime - startTime
     timeOfDay = time.localtime(time.time())
-    print 'Took:   '+str(lengthOfRun)+' seconds,  Finished at:  '+str(timeOfDay[3])+':'+str(timeOfDay[4])
+    print('Took:   '+str(lengthOfRun)+' seconds,  Finished at:  '+str(timeOfDay[3])+':'+str(timeOfDay[4]))
 
 
 def setDataIN(ExpFileLocation,paramDict,label='*ASSIMILATION'):
@@ -673,7 +672,7 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
 
     lAssim = False
 
-    print obsDOY
+    print(obsDOY)
     if np.abs(obsDOY - t) <= 0.000001:
         y = np.zeros((M,numLayers))
         lAssim = True
@@ -765,8 +764,8 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
 
         
     else:
-        print 'not updating'
-        print obsDOY,t
+        print('not updating')
+        print(obsDOY,t)
         Karray = np.zeros((numModels,numLayers,M))
         for layer in range(numLayers):
             for model in range(numModels):
@@ -915,7 +914,7 @@ def setMeteo(srcDrive,ExpFileLocation,filename,numDays,iRadiation=2,iCrop=0,year
             for j in range(len(precs)):
                 atmoshIN.setData('Prec',precs[j],ind+j+offset-1)
 ##            offset += len(precs)
-            print ind,ind+offset,precs[j]
+            print(ind,ind+offset,precs[j])
             atmoshIN.setData('Prec',(info[i,4])/10.0-precs[0],ind+offset)
 ##        if float(info[i,4]) > 75.0:
 ##            atmoshIN.setData('Prec',(info[i,4]/10.0),ind+offset)
