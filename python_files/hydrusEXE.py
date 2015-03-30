@@ -5,8 +5,8 @@
 
 #import tkSimpleDialog
 #import tkFileDialog
-from Tkinter import *
-import tkMessageBox
+from tkinter import *
+## import messageBox
 import shutil
 import os
 import types
@@ -67,8 +67,8 @@ class HYDRUS:
 ##            (child_stdout,child_stderr) = (p.stdout, p.stderr)
 ##            p.stdin.close()
             (stdoutData, stderrData) = p.communicate()
-            print stdoutData
-            print stderrData
+            print(stdoutData)
+            print(stderrData)
         except:
             pass
 
