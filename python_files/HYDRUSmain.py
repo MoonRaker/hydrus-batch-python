@@ -27,7 +27,7 @@ import cPickle
 def runCropModel():
     srcDrive = "C:\\Derek\\"
 
-    method = 99 # 1 = Single HYDRUS run, 2 = simple single run, 3 = Many Runs, ? = MonteCarlo, 4 = Ensemble
+    method = 3 # 1 = Single HYDRUS run, 2 = simple single run, 3 = Many Runs, ? = MonteCarlo, 4 = Ensemble
 
     expYear = '04'
 
@@ -43,6 +43,8 @@ def runCropModel():
     exp = 'SW605_FreeDrainage'
     # exp = 'SW605_InfOnly'
     # exp = 'SW605'
+
+    exp = 'SW605_2'
     
 
     # Experiment File location
@@ -162,6 +164,8 @@ def runCropModel():
 
         # setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,year=expYear,iCrop=0)
 
+        
+
 ##        paramDict = {'lShort':'t','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
 ##                     'iAssim':0,'CropType':1,'Ensemble':'f'}
         
@@ -180,9 +184,9 @@ def runCropModel():
 ##        paramDict = {'MaxIt':20,'TolH':1,'Model':3}#,'hTabN':0,'hTab1':0} # need to fix model (in Water and Root)
         # setSelectorParams(ExpFileLocation,paramDict)
             
-        paramValues = getAllTexParams()
+        # paramValues = getAllTexParams()
         # numSoils = 10
-        numSoils = 1326
+        # numSoils = 1326
 
 ##        soils = [1,4,54,104,150,158,199,200,202,247,292,340,382,432,466,507,547,550,553,
 ##                 588,593,624,697,700,923,925,951,976,977,1297,1302]
@@ -202,12 +206,24 @@ def runCropModel():
         
 ##        numSoils = len(soils)
 
+        numSoils = 10
+        infile = open('C:\Derek\ProgrammingFolder\precs.txt','r')
+        lines = infile.readlines()
+        infile.close()
+
+        print(lines[0])
+        print()
+        precs = [round(float(line.split(' ')[2]),2) for line in lines]
+
         for ind in range(numSoils):
 ##            soil = soils[ind]
             soil = ind
             print('###############################')
             print('Soil: ' + str(soil))
             print('###############################')
+
+
+            # setAtmosh(ExpFileLocation,prec=precs[ind])
              
             
 ##                paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
@@ -215,12 +231,12 @@ def runCropModel():
 ##                setSelectorParams(ExpFileLocation,paramDict)
                 
             # set varying parameters
-            paramList = ['thr','ths','Alfa','n','Ks']
-            for i in range(len(paramList)):
-                data = [str(paramValues[soil,i])]
+            # paramList = ['thr','ths','Alfa','n','Ks']
+            # for i in range(len(paramList)):
+                # data = [str(paramValues[soil,i])]
 ##                if paramList[i] == 'Ks':
 ##                    data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, used for Phillip's simulations
-                setSelectorParams(ExpFileLocation,{paramList[i]:data})
+                # setSelectorParams(ExpFileLocation,{paramList[i]:data})
 
             hydrusEXE.run_hydrus(noCMDWindow,str(1))
 ##            nodInf = NODINF(ExpFileLocation)
@@ -228,7 +244,7 @@ def runCropModel():
 ##            fileLocation = hydrus.outputResults("Phillips - Test",str(soil))
 ##            fileLocation = hydrus.outputResults("Crop - 642 - Test",str(soil))
             # fileLocation = hydrus.outputResults("No Crop - Homogeneous",str(soil))
-            fileLocation = hydrusEXE.outputResults("ROSETTA - 2 Percent",str(soil))
+            fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
 
         print('Done...')
 
@@ -836,6 +852,28 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
 ##                outfile.write('\n')
 ##            
 ##            outfile.close()
+
+
+def setAtmosh(ExpFileLocation,prec):
+
+    atmoshIN = ATMOSPHIN(ExpFileLocation)
+
+    # atmoshIN.setData('MaxAL',numDays)
+    # atmoshIN.setData('hCritS',5)
+    
+    offset = 0
+##    steps = [0.7,0.8,0.9]
+##    precs = [0.2,0.4,0.6]
+##    steps = [2.0,1.0]
+##    precs = [0.25,0.5]
+    # steps = [1.0]
+    # precs = [0.5]
+
+    atmoshIN.setData('Prec',prec,1+offset)
+            
+    atmoshIN.setData('hCritA',10000,1+offset)
+
+    atmoshIN.update()
 
 def setMeteo(srcDrive,ExpFileLocation,filename,numDays,iRadiation=2,iCrop=0,year='04',albedo=0.15):
 ##    Ensemble Mode 6
