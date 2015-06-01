@@ -180,6 +180,8 @@ def runCropModel():
         
         setSelectorParams(ExpFileLocation,paramDict)
 
+
+ 
         
 ##        paramDict = {'MaxIt':20,'TolH':1,'Model':3}#,'hTabN':0,'hTab1':0} # need to fix model (in Water and Root)
         # setSelectorParams(ExpFileLocation,paramDict)
@@ -215,6 +217,8 @@ def runCropModel():
         print()
         precs = [round(float(line.split(' ')[2]),2) for line in lines]
 
+        days = [31,28,31,30,31,30,31,31,31,31,30]
+
         for ind in range(numSoils):
 ##            soil = soils[ind]
             soil = ind
@@ -223,8 +227,13 @@ def runCropModel():
             print('###############################')
 
 
-            # setAtmosh(ExpFileLocation,prec=precs[ind])
-             
+            numDays = days[ind]
+
+            setAtmosh(ExpFileLocation,precs[ind],numDays)
+            paramDict = {'tMax':numDays,'MPL':numDays,'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1}
+            setSelectorParams(ExpFileLocation,paramDict)
+
+
             
 ##                paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
 ##                             'Ensemble':'f','iAssim':0,'CropType':1}
@@ -854,7 +863,7 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
 ##            outfile.close()
 
 
-def setAtmosh(ExpFileLocation,prec):
+def setAtmosh(ExpFileLocation,prec,tatm):
 
     atmoshIN = ATMOSPHIN(ExpFileLocation)
 
@@ -872,6 +881,8 @@ def setAtmosh(ExpFileLocation,prec):
     atmoshIN.setData('Prec',prec,1+offset)
             
     atmoshIN.setData('hCritA',10000,1+offset)
+
+    atmoshIN.setData('tAtm',tatm,1+offset)
 
     atmoshIN.update()
 
