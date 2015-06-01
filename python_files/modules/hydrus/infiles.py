@@ -62,14 +62,16 @@ class SELECTORIN:
                     self.data.append([headings[j],values[j]])
             elif i == 25:
                 for j in range(len(headings)):
-                    self.data.append([headings[j],[values[j]]])
-                # offset += 2
-                # while self.lines[i+offset].split()[0] != '***': # multiple materials, beeds fixin' -9/2/2014 DGG
-                #     values = self.lines[i+offset].split()
-                #     for j in range(len(headings)):
-                #         index = len(headings)-j-1
-                #         self.data[-(1+index)][1].append(values[j])
-                #     offset += 1
+                    values = []
+                    offset = 1
+                    while self.lines[i+offset].split()[0] != '***': # multiple materials, needs fixin' -9/2/2014 DGG
+                        val = self.lines[i+offset].split()[j]
+                        values.append(val)
+                        offset += 1
+                    info = [headings[j]]
+                    for k in range(len(values)):
+                        info.append(values[k])
+                    self.data.append(info)
             else:
                 for j in range(len(headings)):
                     self.data.append([headings[j],values[j]])
@@ -117,10 +119,14 @@ class SELECTORIN:
                         
 
     # return init data            
-    def getData(self,param):
+    def getData(self,param,pInd=1):
         for data in self.data:
             if data[0] == param:
+                # print(data)
                 paramValue = data[1]
+                if param in ['thr','ths','Alfa','n','Ks']:
+                    # print(data)
+                    paramValue = [data[pInd]]
 
         return paramValue[0]
 
