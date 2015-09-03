@@ -22,6 +22,7 @@ import scipy as sp
 import numpy as np
 import sys
 import cPickle
+from scipy.io import *
 
 
 def runCropModel():
@@ -40,11 +41,11 @@ def runCropModel():
 ##    exp = 'MatNumTest'
 ##    exp = 'Phillips'
 
-    exp = 'SW605_FreeDrainage'
+    # exp = 'SW605_FreeDrainage'
     # exp = 'SW605_InfOnly'
-    # exp = 'SW605'
+    exp = 'SW605'
 
-    exp = 'SW605_2'
+    # exp = 'SW605_2'
     
 
     # Experiment File location
@@ -159,101 +160,114 @@ def runCropModel():
     elif method == 3:
         #  Make sure it is using the original SELECTOR.IN file
 
-##        profile = PROFILEDAT(ExpFileLocation)
-##        profile.setData('Mat',1)
+        paramValuesFull = getAllTexParams(prct="01")
+        for k in range(1000):
+    ##        profile = PROFILEDAT(ExpFileLocation)
+    ##        profile.setData('Mat',1)
 
-        # setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,year=expYear,iCrop=0)
+            # setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,year=expYear,iCrop=0)
 
-        
-
-##        paramDict = {'lShort':'t','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
-##                     'iAssim':0,'CropType':1,'Ensemble':'f'}
-        
-##        paramDict = {'lSink':'t','lRoot':'t','iAssim':0,'CropType':1,'Ensemble':'f','hTabN':100000}
-        paramDict = {'lSink':'f','lRoot':'f','iAssim':0,'CropType':0,'Ensemble':'f','hTabN':100000}
-        
-##        paramDict = {'lSink':'f','lRoot':'f','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
-##                 'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1,
-##                 'tMax':numDays,'tInit':0,'MPL':numDays,
-##                 'iAssim':0,'CropType':0,'Trial':0,'Ensemble':'f','NMat':1}
-
-        
-        setSelectorParams(ExpFileLocation,paramDict)
-
-
- 
-        
-##        paramDict = {'MaxIt':20,'TolH':1,'Model':3}#,'hTabN':0,'hTab1':0} # need to fix model (in Water and Root)
-        # setSelectorParams(ExpFileLocation,paramDict)
             
-        # paramValues = getAllTexParams()
-        # numSoils = 10
-        # numSoils = 1326
 
-##        soils = [1,4,54,104,150,158,199,200,202,247,292,340,382,432,466,507,547,550,553,
-##                 588,593,624,697,700,923,925,951,976,977,1297,1302]
-##
-##        numSoils = len(soils)
+    ##        paramDict = {'lShort':'t','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
+    ##                     'iAssim':0,'CropType':1,'Ensemble':'f'}
+            
+    ##        paramDict = {'lSink':'t','lRoot':'t','iAssim':0,'CropType':1,'Ensemble':'f','hTabN':100000}
+            paramDict = {'lSink':'f','lRoot':'f','iAssim':0,'CropType':0,'Ensemble':'f','hTabN':100000}
+            
+    ##        paramDict = {'lSink':'f','lRoot':'f','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
+    ##                 'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1,
+    ##                 'tMax':numDays,'tInit':0,'MPL':numDays,
+    ##                 'iAssim':0,'CropType':0,'Trial':0,'Ensemble':'f','NMat':1}
 
-##        
-##        soils = [746, 747, 779, 781, 677, 713, 641, 714, 676, 711, 639, 710, 678, 640, 712]
-##        soils = [515, 516, 554, 556, 434, 476, 392, 477, 433, 474, 390, 473, 435, 391, 475]
-##        numSoils = len(soils)
-
-        
-######  Prematurely ended trials - No Crop, 8/7/2013
-##        soils = [929, 1321 , 1322 , 1323 , 1324, 1325]
-######  Prematurely ended trials - Crop, 8/7/2013
-##        soils = [1313, 1316, 1317, 1319, 1320, 1321 , 1322 , 1323 , 1324, 1325]
-        
-##        numSoils = len(soils)
-
-        numSoils = 10
-        infile = open('C:\Derek\ProgrammingFolder\precs.txt','r')
-        lines = infile.readlines()
-        infile.close()
-
-        print(lines[0])
-        print()
-        precs = [round(float(line.split(' ')[2]),2) for line in lines]
-
-        days = [31,28,31,30,31,30,31,31,31,31,30]
-
-        for ind in range(numSoils):
-##            soil = soils[ind]
-            soil = ind
-            print('###############################')
-            print('Soil: ' + str(soil))
-            print('###############################')
-
-
-            numDays = days[ind]
-
-            setAtmosh(ExpFileLocation,precs[ind],numDays)
-            paramDict = {'tMax':numDays,'MPL':numDays,'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1}
+            
             setSelectorParams(ExpFileLocation,paramDict)
 
 
+     
             
-##                paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
-##                             'Ensemble':'f','iAssim':0,'CropType':1}
-##                setSelectorParams(ExpFileLocation,paramDict)
+    ##        paramDict = {'MaxIt':20,'TolH':1,'Model':3}#,'hTabN':0,'hTab1':0} # need to fix model (in Water and Root)
+            # setSelectorParams(ExpFileLocation,paramDict)
                 
-            # set varying parameters
-            # paramList = ['thr','ths','Alfa','n','Ks']
-            # for i in range(len(paramList)):
-                # data = [str(paramValues[soil,i])]
-##                if paramList[i] == 'Ks':
-##                    data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, used for Phillip's simulations
-                # setSelectorParams(ExpFileLocation,{paramList[i]:data})
+            
+            paramValues = paramValuesFull[k,:,:]
+            # print(paramValues.shape)
 
-            hydrusEXE.run_hydrus(noCMDWindow,str(1))
-##            nodInf = NODINF(ExpFileLocation)
-##            nodInf.removeData(200)
-##            fileLocation = hydrus.outputResults("Phillips - Test",str(soil))
-##            fileLocation = hydrus.outputResults("Crop - 642 - Test",str(soil))
-            # fileLocation = hydrus.outputResults("No Crop - Homogeneous",str(soil))
-            fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
+
+            numSoils = 15
+            numSoils = 1326
+
+    ##        soils = [1,4,54,104,150,158,199,200,202,247,292,340,382,432,466,507,547,550,553,
+    ##                 588,593,624,697,700,923,925,951,976,977,1297,1302]
+    ##
+    ##        numSoils = len(soils)
+
+    ##        
+    ##        soils = [746, 747, 779, 781, 677, 713, 641, 714, 676, 711, 639, 710, 678, 640, 712]
+    ##        soils = [515, 516, 554, 556, 434, 476, 392, 477, 433, 474, 390, 473, 435, 391, 475]
+    ##        numSoils = len(soils)
+
+            
+    ######  Prematurely ended trials - No Crop, 8/7/2013
+    ##        soils = [929, 1321 , 1322 , 1323 , 1324, 1325]
+    ######  Prematurely ended trials - Crop, 8/7/2013
+    ##        soils = [1313, 1316, 1317, 1319, 1320, 1321 , 1322 , 1323 , 1324, 1325]
+            
+    ##        numSoils = len(soils)
+
+
+            ###### Melissa Clutter  ##########################
+            # numSoils = 10
+            # infile = open('C:\Derek\ProgrammingFolder\precs.txt','r')
+            # lines = infile.readlines()
+            # infile.close()
+
+            # print(lines[0])
+            # print()
+            # precs = [round(float(line.split(' ')[2]),2) for line in lines]
+
+            # days = [31,28,31,30,31,30,31,31,31,31,30]
+
+            for ind in range(numSoils):
+    ##            soil = soils[ind]
+                soil = ind
+                # print('###############################')
+                # print('Soil: ' + str(soil))
+                # print('###############################')
+
+
+                # numDays = days[ind]
+
+                # setAtmosh(ExpFileLocation,precs[ind],numDays)
+                # paramDict = {'tMax':numDays,'MPL':numDays,'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1}
+                # setSelectorParams(ExpFileLocation,paramDict)
+
+
+                
+    ##                paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
+    ##                             'Ensemble':'f','iAssim':0,'CropType':1}
+    ##                setSelectorParams(ExpFileLocation,paramDict)
+                    
+                #### set varying parameters
+                paramList = ['thr','ths','Alfa','n','Ks']
+                for i in range(len(paramList)):
+                    data = [str(paramValues[soil,i])]
+                    # print(data)
+                   # if paramList[i] == 'Ks':
+                       # data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, used for Phillip's simulations
+                    setSelectorParams(ExpFileLocation,{paramList[i]:data})
+
+                hydrusEXE.run_hydrus(noCMDWindow,str(1))
+    ##            nodInf = NODINF(ExpFileLocation)
+    ##            nodInf.removeData(200)
+    ##            fileLocation = hydrus.outputResults("Phillips - Test",str(soil))
+    ##            fileLocation = hydrus.outputResults("Crop - 642 - Test",str(soil))
+                # fileLocation = hydrus.outputResults("No Crop - Homogeneous",str(soil))
+                # fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
+                fileLocation = hydrusEXE.outputResults("ROSETTA - 2 percent - perturbed1000",str(soil))
+
+            hydrusEXE.saveOutput(k,exp,200,'perturbedData_1000')
+            print('Finished iteration: '+str(k))
 
         print('Done...')
 
@@ -524,10 +538,17 @@ def setDataIN(ExpFileLocation,paramDict,label='*ASSIMILATION'):
 
     dataIN.update()
 
-def getAllTexParams():
+def getAllTexParams(prct=None):
+
+    srcDrive = "C:\\Derek\\"
+    directory = srcDrive+"ProgrammingFolder\\Projects\\simpleSoilClustering\\"
 
     water = WC()
     paramValues = water.getParams()
+
+    if prct != None:
+        dataDict = loadmat(directory+'WC_SW605_perturbed'+str(prct)+'_all.mat')
+        paramValues = dataDict['params'][:]
     
     return paramValues
 

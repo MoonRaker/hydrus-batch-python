@@ -15,6 +15,13 @@ from win32com.client import *
 import subprocess
 import sys
 import shlex
+# import pandas as pd 
+import numpy as np
+from scipy.io import *
+import cPickle as cPkl
+
+from hydrus.outfiles import *
+
 
 class HYDRUS:
     
@@ -58,20 +65,27 @@ class HYDRUS:
 ##            print >>sys.stderr, "Execution failed:", e," Trial ", trial
 
                 
-            
+########## last use 9.1.2015 DGG  ######################################################################################            
+#         try:
+# ##            process = subprocess.call(args,startupinfo=su)
+# ##            print 'calling'
+#             p = subprocess.Popen(args2,shell=True,startupinfo=su,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+# ##            print 'called'
+# ##            p = subprocess.Popen(args2,startupinfo=su)
+# ##            (child_stdout,child_stderr) = (p.stdout, p.stderr)
+# ##            p.stdin.close()
+#             (stdoutData, stderrData) = p.communicate()
+#             print(stdoutData)
+#             print(stderrData)
+#         except:
+#             pass
+########################################################################################################################
+
+
         try:
-##            process = subprocess.call(args,startupinfo=su)
-##            print 'calling'
-            p = subprocess.Popen(args2,shell=True,startupinfo=su,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-##            print 'called'
-##            p = subprocess.Popen(args2,startupinfo=su)
-##            (child_stdout,child_stderr) = (p.stdout, p.stderr)
-##            p.stdin.close()
-            (stdoutData, stderrData) = p.communicate()
-            print(stdoutData)
-            print(stderrData)
-        except:
-            pass
+            out = subprocess.check_output(args2, shell=False,stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError, e:
+            print(e.output)
 
 
 
@@ -187,3 +201,83 @@ class HYDRUS:
 ##            shutil.move(self.directory+ "\\" + infile,resultsDir)
 
         return resultsDir
+
+    def saveOutput(self,ind,expType,depth,db,trial=None):
+
+        exp = 'simpleClusterPerturbed'
+
+        srcDrive = 'C:\\Derek\\'
+        # dataDir = srcDrive+'ProgrammingFolder\\Projects\\simpleSoilClustering\\PerturbedData\\Trial '+str(ind)+'\\'
+        dataDir = srcDrive+'ProgrammingFolder\\Projects\\simpleSoilClustering\\PerturbedData\\'
+        resultsDir = srcDrive+'ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\'
+
+        # try:
+        #     os.makedirs(dataDir)
+        # except OSError:
+        #     shutil.rmtree(dataDir)
+        #     os.makedirs(dataDir)
+
+        days = range(202)
+        if expType in ['SW605_InfOnly','SW605','SW605_FreeDrainage']:
+            if expType == 'SW605_InfOnly':
+                days = range(42)
+            if expType == 'SW605_FreeDrainage':
+                days = range(162)
+
+        numTrials = 1326
+        # numTrials = 15
+        # wcList = []
+
+        # if ind == 0 and trial == 0:
+            # WCData = np.zeros((1000,numTrials,len(days),depth))
+            # dataDict = {'wc': WCData}
+            # savemat(dataDir+db+'.mat', mdict={'WC_Data':dataDict},do_compression=True)       
+            
+        WCData = np.zeros((numTrials,len(days),depth)) # list of average wc over depth for each trial for each day
+
+        for trial in range(numTrials):
+            if exp == 'simpleCluster':
+                ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent\\Trial= '+str(trial)
+            elif exp == 'simpleClusterPerturbed':
+                ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent - perturbed1000\\Trial= '+str(trial)
+            elif exp == 'CropModel':
+                ResultsFileLocation = resultsDir+'CropModel\\'+expType+'\\Trial= '+str(trial)
+
+            #Initialize Classes
+            nodInf = NODINF(ResultsFileLocation)
+            for day in days:
+                if day > len(nodInf.getTimes())-1:
+                    wc = np.array([0.0])
+                else:
+                    wc = nodInf.getWCData(day,depth)
+    ##            WCData[trial,ind] = wc.mean()*depth*1.0
+                # if trial == 7:
+                    # print(wc[0],WCData.shape)
+                WCData[trial,day,:] = wc*1.0
+
+        # pkl_file = open(dataDir+'data'+str(ind)+'.pkl', 'wb')
+        # cPkl.dump(WCData, pkl_file)
+        # pkl_file.close()
+
+        dataDict = {'wc': WCData}
+        savemat(dataDir+'data'+str(ind)+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
+            
+            # if not os.path.exists(dataDir+db+'.mat'):
+
+            # dataDict = loadmat(dataDir+db+'.mat')
+            # data = dataDict['WC_Data']['wc'][0,0][:]
+            # data = np.append(data,[WCData],axis=0)
+            # dataDict = {'wc': WCData}
+
+            # dataDict = {'wc': WCData}
+            # savemat(dataDir+db+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
+
+
+
+
+
+
+
+
+
+
