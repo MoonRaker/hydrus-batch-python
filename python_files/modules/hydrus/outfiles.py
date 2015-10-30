@@ -4,9 +4,13 @@
 #This a class that accesses the files with the Extension .OUT
 
 import os
-from Tkinter import *
-import tkMessageBox
+from tkinter import *
+# import messagebox
 import numpy as np
+
+from scipy.io import FortranFile
+import sys
+import importlib
 
 
 class TLEVEL:
@@ -139,11 +143,12 @@ class BALANCEOUT:
 
 class NODINF:
 
-    def __init__(self,directory):
+    def __init__(self,directory,lbinary=False):
         
         self.directory = directory
         os.chdir(self.directory)
         self.dirList = os.listdir(self.directory)
+        self.lbinary = lbinary
 		
         #Soil file of interest
         self.OUT_index = self.dirList.index('NOD_INF.OUT')
@@ -152,9 +157,52 @@ class NODINF:
         
     def readData(self):
 
-        infile = open(self.directory+"\\"+self.dirList[self.OUT_index],"r")
-        self.lines = infile.readlines()
-        infile.close()
+        # importlib.reload(sys)  
+        # sys.setdefaultencoding('utf8')
+
+        if not self.lbinary:
+            infile = open(self.directory+"\\"+self.dirList[self.OUT_index],"r")
+            self.lines = infile.readlines()
+            infile.close()
+        else:
+            # infile = FortranFile(self.directory+"\\"+self.dirList[self.OUT_index],"r")
+            # self.lines = infile.read_record(dtype=np.float64)
+            infile = open(self.directory+"\\"+self.dirList[self.OUT_index],"rb")
+            # self.lines = infile.readlines()
+            # # print(self.lines[0])
+            # self.lines = [item.decode("utf-8",'surrogateescape') for item in self.lines[0]]
+            # print(self.lines[0])
+
+            for i in range(201):
+                # if i > 1:
+                #     for l in range(20):
+                #         hexstr = np.fromfile(infile,dtype='int32',count=1)
+                #         print(hexstr)
+                #     continue
+                if i == 0:
+                    offset1 = 1
+                    offset2 = 2
+                if i == 1:
+                    offset1 = 2
+                    offset2 = 2
+                for m in range(offset1):
+                    np.fromfile(infile,dtype='int32',count=1)                   
+                hexstr1 = np.fromfile(infile,dtype='int32',count=1)
+                hexstr2 = np.fromfile(infile,dtype='float32',count=10)
+                # print(hexstr1)
+                # print(hexstr2)
+                num = 200
+                for j in range(num):
+                    for k in range(offset2):
+                        np.fromfile(infile,dtype='int32',count=1)                   
+                    hexstr1 = np.fromfile(infile,dtype='int32',count=1)
+                    hexstr2 = np.fromfile(infile,dtype='float32',count=10)
+                    if i == 200:
+                        print(hexstr1)
+                        print(hexstr2)
+                # if i > 0:
+                    # np.fromfile(infile,dtype='int32',count=1)
+
 
         self.times = []
 
@@ -166,15 +214,17 @@ class NODINF:
                     end = i
                     break
         self.step = end - start + 3
-        self.numTimes = (len(self.lines)-10)/self.step
+
+        # self.numTimes = (len(self.lines)-10)/self.step # DGG 9-24-2015 - fixed
+        self.numTimes = int((len(self.lines)-4)/self.step)
 
         if 'Welcome' in self.lines[1].split():
             offset = 6
         elif 'Welcome' in self.lines[2].split():
             offset = 7
-            
-        for i in range(self.numTimes+1):
-            self.times.append(offset+i*self.step)   
+
+        for i in range(self.numTimes):
+            self.times.append(offset+i*self.step)
         self.firstNodes = np.array(self.times) + 6  # 6 == depth 0, 7 == depth 1
 
     def getTimes(self):
@@ -286,7 +336,7 @@ class NODINF:
                     else:
                         temp.append(self.lines[j])
                 except IndexError:
-                    print j
+                    print(j)
             temp.append('end\n\n\n')
                     
         self.lines = temp
@@ -462,7 +512,7 @@ class ICHECK:
             matNum = int(self.lines[node+start].split()[3])
             return matNum
         else:
-            print "There isn't that many nodes..."
+            print("There isn't that many nodes...")
 
     def getParams(self,node):
 

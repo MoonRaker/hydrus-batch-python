@@ -6,7 +6,7 @@
 #import tkSimpleDialog
 #import tkFileDialog
 # from tkinter import *
-from Tkinter import *
+from tkinter import *
 ## import messageBox
 import shutil
 import os
@@ -18,9 +18,11 @@ import shlex
 # import pandas as pd 
 import numpy as np
 from scipy.io import *
-import cPickle as cPkl
+import pickle as pkl
 
 from hydrus.outfiles import *
+import time
+from scipy.io import FortranFile
 
 
 class HYDRUS:
@@ -32,7 +34,7 @@ class HYDRUS:
         self.fileExtList = [".out",".in",".txt",".dat",".pkl"]
 
     #runs the HYDRUS program    
-    def run_hydrus(self,noCMDWindow,trial):
+    def run_hydrus(self,noCMDWindow):
         args = r'C:\HYDRUS-1D 4.xx\cropmodel.exe'
 ##        args = r'C:\HYDRUS-1D 4.xx\H1D_CALC.exe'
 ##        args = r"H1D_CALC"
@@ -45,15 +47,15 @@ class HYDRUS:
 
 ##        print args2
         
-        if subprocess.mswindows:
-            su = subprocess.STARTUPINFO()
+        # if subprocess.mswindows:
+        #     su = subprocess.STARTUPINFO()
             
-            if noCMDWindow == 1:
-                su.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                su.wShowWindow = subprocess.SW_HIDE 
-            else:
-                su.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                su.wShowWindow = 1 #SW_SHOW = 5,  SW_SHOWNORMAL = 1
+        #     if noCMDWindow == 1:
+        #         su.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        #         su.wShowWindow = subprocess.SW_HIDE 
+        #     else:
+        #         su.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        #         su.wShowWindow = 1 #SW_SHOW = 5,  SW_SHOWNORMAL = 1
 
 ##        try:
 ##            retcode = subprocess.call(args,shell=True,startupinfo=su)
@@ -84,7 +86,9 @@ class HYDRUS:
 
         try:
             out = subprocess.check_output(args2, shell=False,stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError, e:
+            if noCMDWindow != 1:
+                print(out.decode("utf-8"))
+        except subprocess.CalledProcessError as e:
             print(e.output)
 
 
@@ -183,8 +187,16 @@ class HYDRUS:
         try:
             os.makedirs(resultsDir)
         except OSError:
-            shutil.rmtree(resultsDir)
-            os.makedirs(resultsDir)
+            while True:
+                try:
+                    shutil.rmtree(resultsDir)
+                except WindowsError:
+                    time.sleep(10)
+                else:
+                    os.makedirs(resultsDir)
+                    break
+
+
 ##            root = Tk()
 ##            root.withdraw()
 ##            writeResults = tkMessageBox.askyesno("Warning!","Results directory already exists. Would you like to overwrite?")
@@ -202,7 +214,7 @@ class HYDRUS:
 
         return resultsDir
 
-    def saveOutput(self,ind,expType,depth,db,trial=None):
+    def saveOutput(self,ind,expType,depth,db=None,trial=None):
 
         exp = 'simpleClusterPerturbed'
 
@@ -236,7 +248,9 @@ class HYDRUS:
         WCData = np.zeros((numTrials,len(days),depth)) # list of average wc over depth for each trial for each day
 
         for trial in range(numTrials):
-            if exp == 'simpleCluster':
+            if db != None:
+                ResultsFileLocation = resultsDir+expType+'\\'+db+'\\Trial= '+str(trial)
+            elif exp == 'simpleCluster':
                 ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent\\Trial= '+str(trial)
             elif exp == 'simpleClusterPerturbed':
                 ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent - perturbed1000\\Trial= '+str(trial)
@@ -244,7 +258,7 @@ class HYDRUS:
                 ResultsFileLocation = resultsDir+'CropModel\\'+expType+'\\Trial= '+str(trial)
 
             #Initialize Classes
-            nodInf = NODINF(ResultsFileLocation)
+            nodInf = NODINF(ResultsFileLocation,lbinary=True)
             for day in days:
                 if day > len(nodInf.getTimes())-1:
                     wc = np.array([0.0])
@@ -256,7 +270,7 @@ class HYDRUS:
                 WCData[trial,day,:] = wc*1.0
 
         # pkl_file = open(dataDir+'data'+str(ind)+'.pkl', 'wb')
-        # cPkl.dump(WCData, pkl_file)
+        # pkl.dump(WCData, pkl_file)
         # pkl_file.close()
 
         dataDict = {'wc': WCData}

@@ -21,7 +21,7 @@ from time import clock
 import scipy as sp
 import numpy as np
 import sys
-import cPickle
+import pickle
 from scipy.io import *
 
 
@@ -50,7 +50,7 @@ def runCropModel():
 
     # Experiment File location
     ExpFileLocation = srcDrive+"ProgrammingFolder\\HYDRUS_Data\\Projects\\"+exp
-    noCMDWindow = 1
+    noCMDWindow = 0
     
 ##    numDays = len(lines) - 6
 ##  CropModel    
@@ -161,7 +161,11 @@ def runCropModel():
         #  Make sure it is using the original SELECTOR.IN file
 
         paramValuesFull = getAllTexParams(prct="01")
-        for k in range(1000):
+
+        offset = 0
+        for k in range(1):
+        # for k in range(1000-offset):
+            k += offset
     ##        profile = PROFILEDAT(ExpFileLocation)
     ##        profile.setData('Mat',1)
 
@@ -194,8 +198,8 @@ def runCropModel():
             # print(paramValues.shape)
 
 
-            numSoils = 15
-            numSoils = 1326
+            numSoils = 1
+            # numSoils = 1326
 
     ##        soils = [1,4,54,104,150,158,199,200,202,247,292,340,382,432,466,507,547,550,553,
     ##                 588,593,624,697,700,923,925,951,976,977,1297,1302]
@@ -257,16 +261,17 @@ def runCropModel():
                        # data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, used for Phillip's simulations
                     setSelectorParams(ExpFileLocation,{paramList[i]:data})
 
-                hydrusEXE.run_hydrus(noCMDWindow,str(1))
+                hydrusEXE.run_hydrus(noCMDWindow)
     ##            nodInf = NODINF(ExpFileLocation)
     ##            nodInf.removeData(200)
     ##            fileLocation = hydrus.outputResults("Phillips - Test",str(soil))
     ##            fileLocation = hydrus.outputResults("Crop - 642 - Test",str(soil))
                 # fileLocation = hydrus.outputResults("No Crop - Homogeneous",str(soil))
                 # fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
-                fileLocation = hydrusEXE.outputResults("ROSETTA - 2 percent - perturbed1000",str(soil))
+                # time.sleep(0.25)
+                fileLocation = hydrusEXE.outputResults("ROSETTA - 2 percent - test",str(soil))
 
-            hydrusEXE.saveOutput(k,exp,200,'perturbedData_1000')
+            hydrusEXE.saveOutput(k,exp,200,'ROSETTA - 2 percent - test')
             print('Finished iteration: '+str(k))
 
         print('Done...')
@@ -423,7 +428,7 @@ def runCropModel():
 
 
         pkl_file = open('C:\\Derek\\CropModel\\soilsDict.pkl', 'rb')
-        soilsDict = cPickle.load(pkl_file)
+        soilsDict = pickle.load(pkl_file)
         pkl_file.close()
 
         numModels = len(soilsDict)
@@ -487,7 +492,7 @@ def runCropModel():
                     directory = srcDrive+"ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\"+exp+"\\Ensemble\\Simulation "+str(model)+"\\Trials\\Trial= "+str(trial-1)
 
                     pkl_file = open('C:\\Derek\\CropModel\\lAssim.pkl', 'rb')
-                    lAssim = cPickle.load(pkl_file)
+                    lAssim = pickle.load(pkl_file)
                     pkl_file.close()
 
                     moveEnsembleFiles(ExpFileLocation,directory)
@@ -495,7 +500,7 @@ def runCropModel():
                     if lAssim:                        
                         tempDir = srcDrive+"ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\"+exp+"\\Ensemble\\Simulation "+str(0)+"\\Trials\\Trial= "+str(trial-1)
                         pkl_file = open(tempDir+'\\xPostList.pkl', 'rb')
-                        xPostList = cPickle.load(pkl_file)
+                        xPostList = pickle.load(pkl_file)
                         pkl_file.close()
                         xPostList = np.array(xPostList)
                         info = xPostList[trial-1,:,model]
@@ -627,7 +632,7 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
 
 ##    pkl_file = open('C:\\Derek\\CropModel\\covR_random.pkl', 'rb')
     pkl_file = open('C:\\Derek\\CropModel\\covR_obs.pkl', 'rb')
-    R = cPickle.load(pkl_file)
+    R = pickle.load(pkl_file)
     pkl_file.close()
 
 ##    print R * 10.0
@@ -671,20 +676,20 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
 
     if trial > 0:
         pkl_file = open(Sim0Dir+'\\Paposteriori.pkl', 'rb')
-        P = cPickle.load(pkl_file)
+        P = pickle.load(pkl_file)
         pkl_file.close()
         papriori = np.array(P[-1])
 
         pkl_file = open(Sim0Dir+'\\KList.pkl', 'rb')
-        KList = cPickle.load(pkl_file)
+        KList = pickle.load(pkl_file)
         pkl_file.close()
         
         pkl_file = open(Sim0Dir+'\\xPostList.pkl', 'rb')
-        xPostList = cPickle.load(pkl_file)
+        xPostList = pickle.load(pkl_file)
         pkl_file.close()
 
         pkl_file = open('C:\\Derek\\CropModel\\obsList.pkl', 'rb')
-        obsList = cPickle.load(pkl_file)
+        obsList = pickle.load(pkl_file)
         pkl_file.close()
 
         if len(obsList) > 0:
@@ -696,7 +701,7 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
             obsList = obsList[1:]
 
         output = open('C:\\Derek\\CropModel\\obsList.pkl','wb')
-        cPickle.dump(obsList, output)
+        pickle.dump(obsList, output)
         output.close()
 
     else:
@@ -710,7 +715,7 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
         obsList = np.arange(6,181,14) # 14 Days
 ##        obsList = []
         output = open('C:\\Derek\\CropModel\\obsList.pkl','wb')
-        cPickle.dump(obsList, output)
+        pickle.dump(obsList, output)
         output.close()
 
     paposteriori = np.zeros((numLayers,numModels))
@@ -823,23 +828,23 @@ def calculateVariances(initialDirectory,numModels,trial,resultsDirectory):
     P.append(paposteriori)
 
     output = open(Sim0Dir+'\\Paposteriori.pkl','wb')
-    cPickle.dump(P, output)
+    pickle.dump(P, output)
     output.close()
 
     KList.append(Karray)
 
     output = open(Sim0Dir+'\\KList.pkl','wb')
-    cPickle.dump(KList, output)
+    pickle.dump(KList, output)
     output.close()
 
     xPostList.append(xpostLayers)
     
     output = open(Sim0Dir+'\\xPostList.pkl','wb')
-    cPickle.dump(xPostList, output)
+    pickle.dump(xPostList, output)
     output.close()
     
     output = open('C:\\Derek\\CropModel\\'+'lAssim.pkl','wb')
-    cPickle.dump(lAssim, output)
+    pickle.dump(lAssim, output)
     output.close()
 
 ##    for model in range(numModels):

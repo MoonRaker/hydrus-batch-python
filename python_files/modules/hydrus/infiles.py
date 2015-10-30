@@ -5,7 +5,7 @@
 
 import os
 # from Tkinter import *
-import tkMessageBox
+# import tkMessageBox
 from hydrus.readline import *
 import numpy as np
 
@@ -187,7 +187,7 @@ class SELECTORIN:
             if param in self.lines[78].split():
                 self.writeGenData(param,paramValue)
             else:
-                print 'Change line reference for xRMax'
+                print('Change line reference for xRMax')
 
         else:
             i = -1
@@ -327,7 +327,7 @@ class ATMOSPHIN:
         self.writeGenData(param,paramValue,time)
 
     def delLines(self,end):
-        print "deleting lines..."
+        print("deleting lines...")
         self.update()
         outfile = open(self.dirList[self.IN_index],"w")
         numLines = self.getNumTimes() - end + 1 
@@ -625,7 +625,7 @@ class METEOIN:
         self.update()
 
     def delLines(self,end):
-        print "deleting lines..."
+        print("deleting lines...")
         self.update()
         outfile = open(self.dirList[self.IN_index],"w")
         numLines = self.getNumTimes() - end + 1 
@@ -634,8 +634,8 @@ class METEOIN:
         self.lines = self.lines[:-numLines]
         self.lines.append(lastLine)
 
-        print numLines,self.getNumTimes()
-        print lastLine
+        print(numLines,self.getNumTimes())
+        print(lastLine)
         
         outfile.seek(0,0)                    
         outfile.writelines(self.lines)
