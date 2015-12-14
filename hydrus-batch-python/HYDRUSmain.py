@@ -41,7 +41,7 @@ def runCropModel():
 ##    exp = 'MatNumTest'
 ##    exp = 'Phillips'
 
-    # exp = 'SW605_FreeDrainage'
+    exp = 'SW605_FreeDrainage'
     # exp = 'SW605_InfOnly'
     exp = 'SW605'
 
@@ -160,18 +160,19 @@ def runCropModel():
     elif method == 3:
         #  Make sure it is using the original SELECTOR.IN file
 
-        paramValuesFull = getAllTexParams(prct="01")
+        paramValuesFull = getAllTexParams(perturb_prct="01")
+        paramValues = getAllTexParams(prct='one',model='old')
+        # numSoils = 4
+        numSoils = paramValues.shape[0]
 
-        offset = 0
+        # offset = 3953
         for k in range(1):
         # for k in range(1000-offset):
             k += offset
     ##        profile = PROFILEDAT(ExpFileLocation)
     ##        profile.setData('Mat',1)
 
-            # setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,year=expYear,iCrop=0)
-
-            
+            # setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,year=expYear,iCrop=0)            
 
     ##        paramDict = {'lShort':'t','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
     ##                     'iAssim':0,'CropType':1,'Ensemble':'f'}
@@ -183,23 +184,13 @@ def runCropModel():
     ##                 'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1,
     ##                 'tMax':numDays,'tInit':0,'MPL':numDays,
     ##                 'iAssim':0,'CropType':0,'Trial':0,'Ensemble':'f','NMat':1}
-
             
             setSelectorParams(ExpFileLocation,paramDict)
-
-
-     
             
     ##        paramDict = {'MaxIt':20,'TolH':1,'Model':3}#,'hTabN':0,'hTab1':0} # need to fix model (in Water and Root)
             # setSelectorParams(ExpFileLocation,paramDict)
-                
             
-            paramValues = paramValuesFull[k,:,:]
-            # print(paramValues.shape)
-
-
-            numSoils = 1
-            # numSoils = 1326
+            # paramValuesK = paramValuesFull[k,:,:] ##
 
     ##        soils = [1,4,54,104,150,158,199,200,202,247,292,340,382,432,466,507,547,550,553,
     ##                 588,593,624,697,700,923,925,951,976,977,1297,1302]
@@ -219,7 +210,6 @@ def runCropModel():
             
     ##        numSoils = len(soils)
 
-
             ###### Melissa Clutter  ##########################
             # numSoils = 10
             # infile = open('C:\Derek\ProgrammingFolder\precs.txt','r')
@@ -234,10 +224,10 @@ def runCropModel():
 
             for ind in range(numSoils):
     ##            soil = soils[ind]
-                soil = ind
-                # print('###############################')
-                # print('Soil: ' + str(soil))
-                # print('###############################')
+                soil = ind + offset
+                print('###############################')
+                print('Soil: ' + str(soil))
+                print('###############################')
 
 
                 # numDays = days[ind]
@@ -254,12 +244,19 @@ def runCropModel():
                     
                 #### set varying parameters
                 paramList = ['thr','ths','Alfa','n','Ks']
-                for i in range(len(paramList)):
-                    data = [str(paramValues[soil,i])]
+                paramDict = dict(zip(['thr','ths','Alfa','n','Ks'],range(5)))
+
+                data = [[str(paramValues[soil,paramDict[paramList[i]]])] for i in range(len(paramList))]
+                dataDict = dict(zip(paramList,data))
+                setSelectorParams(ExpFileLocation,dataDict)
+
+                # for i in range(len(paramList)):
+                # for i in [2]:
+                    # data = [str(paramValuesK[soil,paramDict[paramList[i]]])]
                     # print(data)
                    # if paramList[i] == 'Ks':
                        # data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, used for Phillip's simulations
-                    setSelectorParams(ExpFileLocation,{paramList[i]:data})
+                    # setSelectorParams(ExpFileLocation,{paramList[i]:data})
 
                 hydrusEXE.run_hydrus(noCMDWindow)
     ##            nodInf = NODINF(ExpFileLocation)
@@ -269,9 +266,10 @@ def runCropModel():
                 # fileLocation = hydrus.outputResults("No Crop - Homogeneous",str(soil))
                 # fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
                 # time.sleep(0.25)
-                fileLocation = hydrusEXE.outputResults("ROSETTA - 2 percent - test",str(soil))
+                # fileLocation = hydrusEXE.outputResults("1 percent - new",str(soil))
+                hydrusEXE.saveOutput(soil,exp,200,db="1 percent - old",numtrials=numSoils,trial=soil)
 
-            hydrusEXE.saveOutput(k,exp,200,'ROSETTA - 2 percent - test')
+            # hydrusEXE.saveOutput(k,exp,200,'2 percent - test')
             print('Finished iteration: '+str(k))
 
         print('Done...')
@@ -543,26 +541,26 @@ def setDataIN(ExpFileLocation,paramDict,label='*ASSIMILATION'):
 
     dataIN.update()
 
-def getAllTexParams(prct=None):
+def getAllTexParams(prct='two', model='old', perturb_prct=None):
 
     srcDrive = "C:\\Derek\\"
-    directory = srcDrive+"ProgrammingFolder\\Projects\\simpleSoilClustering\\"
+    directory = srcDrive+"ProgrammingFolder\\Projects\\Clustering\\simpleSoilClustering\\"
 
     water = WC()
-    paramValues = water.getParams()
+    paramValues = water.getParams(prct,model)
 
-    if prct != None:
-        dataDict = loadmat(directory+'WC_SW605_perturbed'+str(prct)+'_all.mat')
+    if perturb_prct != None:
+        dataDict = loadmat(directory+'WC_SW605_perturbed'+str(perturb_prct)+'_params_oldold.mat')
         paramValues = dataDict['params'][:]
     
     return paramValues
 
-def getAllSSC():
+def getAllSSC(prct='two',model='old'):
 
     water = WC()
-    paramValues = SSCData = water.getSSC() 
+    SSCData = water.getSSC(prct,model) 
 
-    return paramValues
+    return SSCData
 
 def getSoilParams(ExpFileLocation):
     paramList = ['thr','ths','Alfa','n','Ks','l']

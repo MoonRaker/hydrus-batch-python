@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# generated documentation
+# pvlib/sphinx/Docs/build/
+
+#Datafiles
+*.csv
+
+#Python compiled files
+*.pyc

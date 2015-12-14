@@ -6,7 +6,7 @@
 #import tkSimpleDialog
 #import tkFileDialog
 # from tkinter import *
-from tkinter import *
+# from tkinter import *
 ## import messageBox
 import shutil
 import os
@@ -214,13 +214,13 @@ class HYDRUS:
 
         return resultsDir
 
-    def saveOutput(self,ind,expType,depth,db=None,trial=None):
+    def saveOutput(self,ind,expType,depth,db=None,numtrials=None,trial=None):
 
-        exp = 'simpleClusterPerturbed'
+        # exp = 'simpleClusterPerturbed'
 
         srcDrive = 'C:\\Derek\\'
         # dataDir = srcDrive+'ProgrammingFolder\\Projects\\simpleSoilClustering\\PerturbedData\\Trial '+str(ind)+'\\'
-        dataDir = srcDrive+'ProgrammingFolder\\Projects\\simpleSoilClustering\\PerturbedData\\'
+        
         resultsDir = srcDrive+'ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\'
 
         # try:
@@ -237,6 +237,35 @@ class HYDRUS:
                 days = range(162)
 
         numTrials = 1326
+        
+        if trial != None:
+            dataDir = srcDrive+'ProgrammingFolder\\Projects\\Clustering\\simpleSoilClustering\\ChunkedData\\'
+            WCData = np.zeros((len(days),depth))
+            # dataDict = {'wc': WCData}
+            # if trial == 0:
+            #     WCData = np.zeros((numtrials,len(days),depth))
+            # else:
+            #     dataDict = loadmat(self.directory+'\\'+expType+'_wcdata.mat')
+            #     WCData = dataDict['WC_Data']['wc'][0][0]
+                # print(WCData)
+
+             # list of average wc over depth for each trial for each day
+
+            #Initialize Classes
+            nodInf = NODINF(self.directory,lbinary=False)
+            for day in days:
+                if day > len(nodInf.getTimes())-1:
+                    wc = np.array([0.0])
+                else:
+                    wc = nodInf.getWCData(day,depth)
+                # print(wc.shape)
+                # print(WCData.shape)
+                WCData[day,:] = wc*1.0
+
+            dataDict = {'wc': WCData}
+            # savemat(self.directory+'\\'+expType+'_wcdata.mat', mdict={'WC_Data':dataDict},do_compression=True)
+            savemat(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
+
         # numTrials = 15
         # wcList = []
 
@@ -245,46 +274,47 @@ class HYDRUS:
             # dataDict = {'wc': WCData}
             # savemat(dataDir+db+'.mat', mdict={'WC_Data':dataDict},do_compression=True)       
             
-        WCData = np.zeros((numTrials,len(days),depth)) # list of average wc over depth for each trial for each day
+        else:
+            dataDir = srcDrive+'ProgrammingFolder\\Projects\\Clustering\\simpleSoilClustering\\PerturbedData\\'
+            WCData = np.zeros((numTrials,len(days),depth)) # list of average wc over depth for each trial for each day
+            for trial in range(numTrials):
+                if db != None:
+                    ResultsFileLocation = resultsDir+expType+'\\'+db+'\\Trial= '+str(trial)
+                elif exp == 'simpleCluster':
+                    ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent\\Trial= '+str(trial)
+                elif exp == 'simpleClusterPerturbed':
+                    ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent - perturbed1000\\Trial= '+str(trial)
+                elif exp == 'CropModel':
+                    ResultsFileLocation = resultsDir+'CropModel\\'+expType+'\\Trial= '+str(trial)
 
-        for trial in range(numTrials):
-            if db != None:
-                ResultsFileLocation = resultsDir+expType+'\\'+db+'\\Trial= '+str(trial)
-            elif exp == 'simpleCluster':
-                ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent\\Trial= '+str(trial)
-            elif exp == 'simpleClusterPerturbed':
-                ResultsFileLocation = resultsDir+expType+'\\ROSETTA - 2 Percent - perturbed1000\\Trial= '+str(trial)
-            elif exp == 'CropModel':
-                ResultsFileLocation = resultsDir+'CropModel\\'+expType+'\\Trial= '+str(trial)
+                #Initialize Classes
+                nodInf = NODINF(ResultsFileLocation,lbinary=True)
+                for day in days:
+                    if day > len(nodInf.getTimes())-1:
+                        wc = np.array([0.0])
+                    else:
+                        wc = nodInf.getWCData(day,depth)
+        ##            WCData[trial,ind] = wc.mean()*depth*1.0
+                    # if trial == 7:
+                        # print(wc[0],WCData.shape)
+                    WCData[trial,day,:] = wc*1.0
 
-            #Initialize Classes
-            nodInf = NODINF(ResultsFileLocation,lbinary=True)
-            for day in days:
-                if day > len(nodInf.getTimes())-1:
-                    wc = np.array([0.0])
-                else:
-                    wc = nodInf.getWCData(day,depth)
-    ##            WCData[trial,ind] = wc.mean()*depth*1.0
-                # if trial == 7:
-                    # print(wc[0],WCData.shape)
-                WCData[trial,day,:] = wc*1.0
+            # pkl_file = open(dataDir+'data'+str(ind)+'.pkl', 'wb')
+            # pkl.dump(WCData, pkl_file)
+            # pkl_file.close()
 
-        # pkl_file = open(dataDir+'data'+str(ind)+'.pkl', 'wb')
-        # pkl.dump(WCData, pkl_file)
-        # pkl_file.close()
+            dataDict = {'wc': WCData}
+            savemat(dataDir+'data'+str(ind)+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
+                
+                # if not os.path.exists(dataDir+db+'.mat'):
 
-        dataDict = {'wc': WCData}
-        savemat(dataDir+'data'+str(ind)+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
-            
-            # if not os.path.exists(dataDir+db+'.mat'):
+                # dataDict = loadmat(dataDir+db+'.mat')
+                # data = dataDict['WC_Data']['wc'][0,0][:]
+                # data = np.append(data,[WCData],axis=0)
+                # dataDict = {'wc': WCData}
 
-            # dataDict = loadmat(dataDir+db+'.mat')
-            # data = dataDict['WC_Data']['wc'][0,0][:]
-            # data = np.append(data,[WCData],axis=0)
-            # dataDict = {'wc': WCData}
-
-            # dataDict = {'wc': WCData}
-            # savemat(dataDir+db+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
+                # dataDict = {'wc': WCData}
+                # savemat(dataDir+db+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
 
 
 
