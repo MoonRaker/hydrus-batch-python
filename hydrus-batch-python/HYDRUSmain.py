@@ -161,12 +161,12 @@ def runCropModel():
         #  Make sure it is using the original SELECTOR.IN file
 
         paramValuesFull = getAllTexParams(perturb_prct="01")
-        paramValues = getAllTexParams(prct='one',model='old')
+        paramValues = getAllTexParams(prct='two',model='new',lmean=False)
         # numSoils = 4
         numSoils = paramValues.shape[0]
 
-        # offset = 3953
-        for k in range(1):
+        offset = 0
+        for k in range(20):
         # for k in range(1000-offset):
             k += offset
     ##        profile = PROFILEDAT(ExpFileLocation)
@@ -225,9 +225,9 @@ def runCropModel():
             for ind in range(numSoils):
     ##            soil = soils[ind]
                 soil = ind + offset
-                print('###############################')
-                print('Soil: ' + str(soil))
-                print('###############################')
+                # print('###############################')
+                # print('Soil: ' + str(soil))
+                # print('###############################')
 
 
                 # numDays = days[ind]
@@ -246,9 +246,11 @@ def runCropModel():
                 paramList = ['thr','ths','Alfa','n','Ks']
                 paramDict = dict(zip(['thr','ths','Alfa','n','Ks'],range(5)))
 
-                data = [[str(paramValues[soil,paramDict[paramList[i]]])] for i in range(len(paramList))]
+                data = [[str(paramValues[soil,paramDict[paramList[i]],k])] for i in range(len(paramList))]
                 dataDict = dict(zip(paramList,data))
                 setSelectorParams(ExpFileLocation,dataDict)
+
+                # print(dataDict)
 
                 # for i in range(len(paramList)):
                 # for i in [2]:
@@ -267,7 +269,8 @@ def runCropModel():
                 # fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
                 # time.sleep(0.25)
                 # fileLocation = hydrusEXE.outputResults("1 percent - new",str(soil))
-                hydrusEXE.saveOutput(soil,exp,200,db="1 percent - old",numtrials=numSoils,trial=soil)
+                trial_num = str(soil)+'.'+str(k)
+                hydrusEXE.saveOutput(soil,exp,200,db="1 percent - 20 particle",numtrials=numSoils,trial=trial_num)
 
             # hydrusEXE.saveOutput(k,exp,200,'2 percent - test')
             print('Finished iteration: '+str(k))
@@ -541,13 +544,13 @@ def setDataIN(ExpFileLocation,paramDict,label='*ASSIMILATION'):
 
     dataIN.update()
 
-def getAllTexParams(prct='two', model='old', perturb_prct=None):
+def getAllTexParams(prct='two', model='old', lmean=True, perturb_prct=None):
 
     srcDrive = "C:\\Derek\\"
     directory = srcDrive+"ProgrammingFolder\\Projects\\Clustering\\simpleSoilClustering\\"
 
     water = WC()
-    paramValues = water.getParams(prct,model)
+    paramValues = water.getParams(prct,model,lmean)
 
     if perturb_prct != None:
         dataDict = loadmat(directory+'WC_SW605_perturbed'+str(perturb_prct)+'_params_oldold.mat')
