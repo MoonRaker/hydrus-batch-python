@@ -12,6 +12,10 @@ from scipy.io import FortranFile
 import sys
 import importlib
 
+import pandas as pd
+
+from itertools import islice
+
 
 class TLEVEL:
     
@@ -366,6 +370,49 @@ class NODINF:
                 lines.insert(0,self.lines[5-i])
                              
         return lines
+
+
+class NODINFFAST:
+
+    def __init__(self,directory):
+        
+        self.directory = directory
+        os.chdir(self.directory)
+        self.dirList = os.listdir(self.directory)
+        
+        #Soil file of interest
+        self.OUT_index = self.dirList.index('NOD_INF.OUT')
+
+        
+    def readData(self):
+
+        # importlib.reload(sys)  
+        # sys.setdefaultencoding('utf8')
+
+        values = []
+
+        flag = True
+        with open(self.directory+"\\"+self.dirList[self.OUT_index],"r") as f:
+            line = list(islice(f,1))
+            while line:
+                if 'Time:' in line[0]:
+                    time = line[0].split()[1]
+                    if flag:
+                        list(islice(f,9))
+                        flag = False
+                    else:
+                        list(islice(f,5))
+                    data = []
+                    sline = list(islice(f,1))[0].split()
+                    # sline = list(islice(f,3))
+                    while sline[0] != 'end':
+                        data.append(float(sline[3]))
+                        sline = list(islice(f,1))[0].split()
+                    values.append(data)
+                    # values[time] = data
+                line = list(islice(f,1))
+
+        return np.array(values)
         
 
 class PROFILEOUT:

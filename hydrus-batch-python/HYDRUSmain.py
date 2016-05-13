@@ -12,17 +12,17 @@ from utils.wc import *
 from hydrus.infiles import *
 from hydrus.outfiles import *
 
-from time import clock
 import time
 import shutil
 import os
 import numpy
-from time import clock
 import scipy as sp
 import numpy as np
 import sys
 import pickle
 from scipy.io import *
+
+from tqdm import tqdm
 
 
 def runCropModel():
@@ -41,7 +41,7 @@ def runCropModel():
 ##    exp = 'MatNumTest'
 ##    exp = 'Phillips'
 
-    exp = 'SW605_FreeDrainage'
+    # exp = 'SW605_FreeDrainage'
     # exp = 'SW605_InfOnly'
     exp = 'SW605'
 
@@ -100,20 +100,20 @@ def runCropModel():
 ##        
 ##        nodInf = NODINF(ExpFileLocation)
 ##        nodInf.removeData(55)
-##        profile = PROFILE(ExpFileLocation)
+
 ##        profile.removeData(55)        
                 
-        setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,iCrop=0)
-        paramDict = {'lSink':'f','lRoot':'f','iAssim':0,'CropType':0,'Ensemble':'f'}
+        # setMeteo(srcDrive,ExpFileLocation,weatherFile,numDays,iRadiation=2,iCrop=0)
+        # paramDict = {'lSink':'f','lRoot':'f','iAssim':0,'CropType':0,'Ensemble':'f'}
 
 ##        paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
 ##                 'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1,
 ##                 'tMax':numDays,'tInit':0,'MPL':numDays,
 ##                 'iAssim':0,'CropType':1,'Trial':0,'Ensemble':'f','NMat':1}
-        setSelectorParams(ExpFileLocation,paramDict)
+        # setSelectorParams(ExpFileLocation,paramDict)
 
-        paramDict = {'MaxIt':20,'TolH':1,'Model':0}#,'hTabN':0,'hTab1':0}
-        setSelectorParams(ExpFileLocation,paramDict)
+        # paramDict = {'MaxIt':20,'TolH':1,'Model':0}#,'hTabN':0,'hTab1':0}
+        # setSelectorParams(ExpFileLocation,paramDict)
 
 
 ##        profile = PROFILEDAT(ExpFileLocation)
@@ -124,31 +124,31 @@ def runCropModel():
 ##        selectorIN = SELECTORIN(ExpFileLocation)
 ##        selectorIN.addMat(numMat=500)
 
-        paramValues = getAllTexParams()
+        # paramValues = getAllTexParams()
 ##        print tempParams[746,:]
 ##        paramValues = np.repeat([tempParams[746,:]],500,axis=0)
 ##        print paramValues.shape
-        paramList = ['thr','ths','Alfa','n','Ks']
+        # paramList = ['thr','ths','Alfa','n','Ks']
 ##        for soil in range(500):  # 500 soils
 
-        soil = 747   # DSSAT Wheat Soil top ~90-100 cm, [34,32,34], 747
+        # soil = 747   # DSSAT Wheat Soil top ~90-100 cm, [34,32,34], 747
 ##        soil = 712 #1313,1303
 
-        for i in range(len(paramList)):
-            data = [str(paramValues[soil,i])] 
+        # for i in range(len(paramList)):
+            # data = [str(paramValues[soil,i])] 
 ##            if paramList[i] == 'Ks':
 ##                data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, Phillips Experiment
-            setSelectorParams(ExpFileLocation,{paramList[i]:data},nmat=1)
+            # setSelectorParams(ExpFileLocation,{paramList[i]:data},nmat=1)
 ##            setSelectorParams(ExpFileLocation,{paramList[i]:data},nmat=soil+1)  # multiple soils
             
-        hydrusEXE.run_hydrus(noCMDWindow,str(1))
+        # hydrusEXE.run_hydrus(noCMDWindow,str(1))
 ##        hydrus.outputResults("MOSCEM4",str(1))
 ##        hydrus.outputResults("ManualDataParams",str(1))
 ##        hydrus.outputResults("M_RosettaSoils",str(1))
 ##        hydrus.outputResults("M_RosettaQSoils",str(1))
 ##        hydrus.outputResults("M_DSSATSoils",str(1))
 ##        hydrus.outputResults("Wheat - Optimized",str(1))
-        hydrusEXE.outputResults("Crop - Homogeneous",str(soil))
+        # hydrusEXE.outputResults("Crop - Homogeneous",str(soil))
         print('Done...')
 
         
@@ -160,15 +160,52 @@ def runCropModel():
     elif method == 3:
         #  Make sure it is using the original SELECTOR.IN file
 
-        paramValuesFull = getAllTexParams(perturb_prct="01")
-        paramValues = getAllTexParams(prct='two',model='new',lmean=False)
-        # numSoils = 4
-        numSoils = paramValues.shape[0]
+        profile = PROFILEDAT(ExpFileLocation)
+        wc = WC()
 
-        offset = 0
-        for k in range(20):
+        numSoils = 1326
+
+        # paramValuesFull = getAllTexParams(prct='one',model='old',lmean=True)
+        # print(paramValuesFull[0].shape)
+        paramValues, idx = getAllTexParams(prct='two',model='new',lmean=False, llog=False,num=779)
+
+        # print(paramValues.shape)
+        # print(idx[3])
+
+        # print(paramValues[3,:,145:150])
+        # print(paramValues[3,:,147:150])
+
+        # numSoils = 0
+
+        # new_idx = {}
+
+        # for key,values in idx.items():
+        #     values = list(values[:20])
+        #     num_list = list(range(20))
+        #     for aval in values[::-1]:
+        #         if aval in num_list:
+        #             num_list.remove(aval)
+        #             values.remove(aval)
+        #     new_idx[key] = [num_list,values]
+        #     print(new_idx[key])
+
+        # new_idx = {0:[[0,1,2],[0,1,2]]}
+
+        # numSoils = 4
+        # numSoils = paramValues.shape[0]
+        # numSoils = len(new_idx.keys())
+
+        offset = 461
+        # for k in range(1):
+        # for soil in new_idx.keys():
+        # for soil in [list(new_idx.keys())[0]]:
+        for soil in tqdm(range(offset, numSoils - offset)):
+            # soil = list(new_idx.keys())[soil]
+            # print('################')
+            # print(soil)
+            # print('################')
         # for k in range(1000-offset):
-            k += offset
+            # k += offset
     ##        profile = PROFILEDAT(ExpFileLocation)
     ##        profile.setData('Mat',1)
 
@@ -222,19 +259,27 @@ def runCropModel():
 
             # days = [31,28,31,30,31,30,31,31,31,31,30]
 
-            for ind in range(numSoils):
+            # for ind in range(numSoils):
+            # for k in range(len(new_idx[soil][0])):
+            for ind in range(779):
     ##            soil = soils[ind]
-                soil = ind + offset
+                # soil = ind + offset
                 # print('###############################')
                 # print('Soil: ' + str(soil))
                 # print('###############################')
 
+                # ind = new_idx[soil][0][k]
+
+                # print(ind)
 
                 # numDays = days[ind]
 
                 # setAtmosh(ExpFileLocation,precs[ind],numDays)
                 # paramDict = {'tMax':numDays,'MPL':numDays,'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1}
                 # setSelectorParams(ExpFileLocation,paramDict)
+
+                
+
 
 
                 
@@ -243,12 +288,30 @@ def runCropModel():
     ##                setSelectorParams(ExpFileLocation,paramDict)
                     
                 #### set varying parameters
+                time0 = time.time()
                 paramList = ['thr','ths','Alfa','n','Ks']
                 paramDict = dict(zip(['thr','ths','Alfa','n','Ks'],range(5)))
 
-                data = [[str(paramValues[soil,paramDict[paramList[i]],k])] for i in range(len(paramList))]
+                data = [[str(paramValues[soil,paramDict[paramList[i]],ind])] for i in range(len(paramList))]
                 dataDict = dict(zip(paramList,data))
+                # print(dataDict)
                 setSelectorParams(ExpFileLocation,dataDict)
+
+                data = np.squeeze(np.array(data, dtype=np.float))
+                # print(data)
+                # s = data[3]**(-.6*(2.+np.log10(data[4])))
+                # thfc = s*(data[1] - data[0]) + data[0]
+
+                # print(thfc)
+                # vgh = wc.vanGpsi(data, thfc)*-1.
+                
+                thfc = wc.fc(data)
+                vgh = wc.vanGpsi(data, thfc)*-1.
+                h = '{:+.6e}'.format(vgh)
+                h = h[:-2] + '0' + h[-2:]
+                # print(h,vgh,thfc)
+                profile.setData('h',h)
+                time1 = time.time()
 
                 # print(dataDict)
 
@@ -269,11 +332,16 @@ def runCropModel():
                 # fileLocation = hydrusEXE.outputResults("Melissa",str(soil))
                 # time.sleep(0.25)
                 # fileLocation = hydrusEXE.outputResults("1 percent - new",str(soil))
-                trial_num = str(soil)+'.'+str(k)
-                hydrusEXE.saveOutput(soil,exp,200,db="1 percent - 20 particle",numtrials=numSoils,trial=trial_num)
+                trial_num = str(soil)+'.'+str(ind)
+                # trial_num = str(soil)
+
+                time2 = time.time()
+                # print(time1 - time0)
+                # print(time2 - time1)
+                hydrusEXE.saveOutput(soil,exp,200,db="2 percent - 782 particle - new",numtrials=numSoils,trial=trial_num)
 
             # hydrusEXE.saveOutput(k,exp,200,'2 percent - test')
-            print('Finished iteration: '+str(k))
+            print('Finished iteration: '+str(soil)+'.'+str(ind))
 
         print('Done...')
 
@@ -544,19 +612,19 @@ def setDataIN(ExpFileLocation,paramDict,label='*ASSIMILATION'):
 
     dataIN.update()
 
-def getAllTexParams(prct='two', model='old', lmean=True, perturb_prct=None):
+def getAllTexParams(prct='two', model='old', num=0, lmean=True, llog=False, perturb_prct=None):
 
     srcDrive = "C:\\Derek\\"
     directory = srcDrive+"ProgrammingFolder\\Projects\\Clustering\\simpleSoilClustering\\"
 
     water = WC()
-    paramValues = water.getParams(prct,model,lmean)
+    paramValues, idx = water.get_params(prct,model,lmean,llog=llog,num=num,lnotnan=True)
 
     if perturb_prct != None:
         dataDict = loadmat(directory+'WC_SW605_perturbed'+str(perturb_prct)+'_params_oldold.mat')
         paramValues = dataDict['params'][:]
     
-    return paramValues
+    return paramValues, idx
 
 def getAllSSC(prct='two',model='old'):
 

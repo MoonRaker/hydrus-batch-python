@@ -24,6 +24,10 @@ from hydrus.outfiles import *
 import time
 from scipy.io import FortranFile
 
+import h5py
+import time
+import pandas as pd
+
 
 class HYDRUS:
     
@@ -86,10 +90,11 @@ class HYDRUS:
 
         try:
             out = subprocess.check_output(args2, shell=False,stderr=subprocess.STDOUT)
-            if noCMDWindow != 1:
-                print(out.decode("utf-8"))
+            # if noCMDWindow != 1:
+            #     print(out.decode("utf-8"))
         except subprocess.CalledProcessError as e:
-            print(e.output)
+            # pass
+            print(e.output.decode("utf-8")) 
 
 
 
@@ -252,19 +257,53 @@ class HYDRUS:
              # list of average wc over depth for each trial for each day
 
             #Initialize Classes
-            nodInf = NODINF(self.directory,lbinary=False)
-            for day in days:
-                if day > len(nodInf.getTimes())-1:
-                    wc = np.array([0.0])
-                else:
-                    wc = nodInf.getWCData(day,depth)
-                # print(wc.shape)
-                # print(WCData.shape)
-                WCData[day,:] = wc*1.0
+            time0 = time.time()
+            # nodInf = NODINF(self.directory,lbinary=False)
+            nodInf = NODINFFAST(self.directory)
+            time1 = time.time()
+            # for day in days:
+            #     if day > len(nodInf.getTimes())-1:
+            #         wc = np.array([0.0])
+            #     else:
+            #         wc = nodInf.getWCData(day,depth)
+            #     # print(wc.shape)
+            #     # print(WCData.shape)
+            #     WCData[day,:] = wc*1.0
+            WCData = nodInf.readData()
+            # print(WCData)
+            time2 = time.time()
+
+
+            # store = pd.HDFStore(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.h5')
+            # store.put('wc',WCData)
+            # store.close()
+
+            # pd.to_msgpack(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.msg', WCData)
 
             dataDict = {'wc': WCData}
             # savemat(self.directory+'\\'+expType+'_wcdata.mat', mdict={'WC_Data':dataDict},do_compression=True)
             savemat(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.mat', mdict={'WC_Data':dataDict},do_compression=True)
+            # pkl_file = open(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.pkl' ,'wb')
+            # pkl.dump(WCData, pkl_file)
+            # pkl_file.close()
+
+            # lines = [','.join(WCData[d,:].astype(str)) + '\n' for d in days]
+            # outfile = open(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.txt' ,'w')
+            # outfile.writelines(lines)
+            # outfile.close()
+
+            # with h5py.File(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.h5', 'w') as hf:
+                # g1 = hf.create_group('wc')
+                # g1.create_dataset('WC_Data', data = WCData, compression="gzip", compression_opts=2)
+                # g1.create_dataset('WC_Data', data = WCData, compression="szip")
+            time3 = time.time()
+            # print(time1 - time0)
+            # print(time2 - time1)
+            # print(time3 - time2)
+
+            # data = loadmat(dataDir+expType+'\\'+db+'\\'+'Trial'+str(trial)+'.mat')
+            # df = data['WC_Data']['wc']
+            # print(df)
 
         # numTrials = 15
         # wcList = []

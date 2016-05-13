@@ -748,6 +748,35 @@ class PROFILEDAT:
 
         self.update()
 
+        #         [paramValue,exps] = profile.readExp(paramValue);
+        #         if ~isempty(ind)
+        #             kk = 0;
+        #             for jj=6:5+length(paramValue)
+        #                 kk = kk + 1;
+        #                 sLine = textscan(profile.C{jj}, '%s','whitespace','');
+                        
+        #                 if exps(jj-5) >= 0.
+        #                     val = sprintf('%fe+%03d',paramValue(jj-5),exps(jj-5));
+        #                 elseif exps(jj-5) < 0.
+        #                     val = sprintf('%fe%04d',paramValue(jj-5),exps(jj-5));
+        #                 end
+                        
+        #                 wline = writeLine(sLine{1},ind,val);
+        #                 profile.C{jj} = wline;
+        #             end
+        #         end
+        #     end
+        # end
+        
+        # function [A,B] = readExp(profile,data)
+        #     sData = sprintf('%e,',data);
+        #     str1 = sprintf('%%%d.%df',8,6);
+        #     results = textscan(sData,strcat(str1,' %2s  %03d'),'delimiter',',');
+        #     A = results{1};
+        #     B = results{3};
+        # end
+            
+
 
 class DATAIN:
     
