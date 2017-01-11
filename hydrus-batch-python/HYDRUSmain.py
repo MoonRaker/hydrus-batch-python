@@ -26,7 +26,7 @@ from tqdm import tqdm
 
 
 def runCropModel():
-    srcDrive = "C:\\Derek\\"
+    srcDrive = "E:\\Derek\\"
 
     method = 3 # 1 = Single HYDRUS run, 2 = simple single run, 3 = Many Runs, ? = MonteCarlo, 4 = Ensemble
 
@@ -41,9 +41,9 @@ def runCropModel():
 ##    exp = 'MatNumTest'
 ##    exp = 'Phillips'
 
-    # exp = 'SW605_FreeDrainage'
+    exp = 'SW605_FreeDrainage'
     # exp = 'SW605_InfOnly'
-    exp = 'SW605'
+    # exp = 'SW605'
 
     # exp = 'SW605_2'
     
@@ -163,11 +163,25 @@ def runCropModel():
         profile = PROFILEDAT(ExpFileLocation)
         wc = WC()
 
+        # offset = 78
+        # offset = 1325
+        offset = 0
         numSoils = 1326
+        # numSoils = 1
+
+        # sample_offset = 47
+        sample_offset = 0
+        nsamples = 698
+        # nsamples = 3
+        # nsamples = 49
 
         # paramValuesFull = getAllTexParams(prct='one',model='old',lmean=True)
         # print(paramValuesFull[0].shape)
-        paramValues, idx = getAllTexParams(prct='two',model='new',lmean=False, llog=False,num=779)
+        paramValues, idx = getAllTexParams(prct='two',model='new',lmean=False, llog=False,num=698)
+
+        # print(paramValues[47:50, :, 78])
+
+        # print(paramValues.shape)
 
         # print(paramValues.shape)
         # print(idx[3])
@@ -195,11 +209,11 @@ def runCropModel():
         # numSoils = paramValues.shape[0]
         # numSoils = len(new_idx.keys())
 
-        offset = 461
+        
         # for k in range(1):
         # for soil in new_idx.keys():
         # for soil in [list(new_idx.keys())[0]]:
-        for soil in tqdm(range(offset, numSoils - offset)):
+        for soil in tqdm(range(offset, offset + numSoils)):
             # soil = list(new_idx.keys())[soil]
             # print('################')
             # print(soil)
@@ -215,7 +229,14 @@ def runCropModel():
     ##                     'iAssim':0,'CropType':1,'Ensemble':'f'}
             
     ##        paramDict = {'lSink':'t','lRoot':'t','iAssim':0,'CropType':1,'Ensemble':'f','hTabN':100000}
-            paramDict = {'lSink':'f','lRoot':'f','iAssim':0,'CropType':0,'Ensemble':'f','hTabN':100000}
+            paramDict = {
+                'lSink':'f',
+                'lRoot':'f',
+                'iAssim':0,
+                'CropType':0,
+                'Ensemble':'f',
+                # 'lEnter':'f',
+                'hTabN':100000}
             
     ##        paramDict = {'lSink':'f','lRoot':'f','lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
     ##                 'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1,
@@ -261,7 +282,8 @@ def runCropModel():
 
             # for ind in range(numSoils):
             # for k in range(len(new_idx[soil][0])):
-            for ind in range(779):
+            # for ind in range(nsamples):
+            for ind in range(sample_offset, nsamples):
     ##            soil = soils[ind]
                 # soil = ind + offset
                 # print('###############################')
@@ -270,7 +292,7 @@ def runCropModel():
 
                 # ind = new_idx[soil][0][k]
 
-                # print(ind)
+                print(ind)
 
                 # numDays = days[ind]
 
@@ -278,11 +300,6 @@ def runCropModel():
                 # paramDict = {'tMax':numDays,'MPL':numDays,'TPrint(1),TPrint(2),...,TPrint(MPL)':np.arange(numDays)+1}
                 # setSelectorParams(ExpFileLocation,paramDict)
 
-                
-
-
-
-                
     ##                paramDict = {'lPrintD':'f','nPrintSteps':1,'tPrintInterval':1,'lEnter':'f',
     ##                             'Ensemble':'f','iAssim':0,'CropType':1}
     ##                setSelectorParams(ExpFileLocation,paramDict)
@@ -305,11 +322,21 @@ def runCropModel():
                 # print(thfc)
                 # vgh = wc.vanGpsi(data, thfc)*-1.
                 
-                thfc = wc.fc(data)
-                vgh = wc.vanGpsi(data, thfc)*-1.
+                # print(data)
+
+                # for I, I & D
+                # thfc = wc.fc(data)
+                # vgh = wc.vanGpsi(data, thfc)*-1.
+
+                # for D
+                vgh = -5.0000000
+
                 h = '{:+.6e}'.format(vgh)
                 h = h[:-2] + '0' + h[-2:]
+
                 # print(h,vgh,thfc)
+                # print(h,vgh,data[1])
+
                 profile.setData('h',h)
                 time1 = time.time()
 
@@ -322,6 +349,10 @@ def runCropModel():
                    # if paramList[i] == 'Ks':
                        # data[0] = round(float(data[0])/(24.0*60.0),7)  # coverts to cm/min, used for Phillip's simulations
                     # setSelectorParams(ExpFileLocation,{paramList[i]:data})
+
+                # if soil == 72 and ind == 49 or ind == 50:
+                # if soil == 78 and (ind == 48 or ind == 49):
+                    # continue
 
                 hydrusEXE.run_hydrus(noCMDWindow)
     ##            nodInf = NODINF(ExpFileLocation)
@@ -338,7 +369,7 @@ def runCropModel():
                 time2 = time.time()
                 # print(time1 - time0)
                 # print(time2 - time1)
-                hydrusEXE.saveOutput(soil,exp,200,db="2 percent - 782 particle - new",numtrials=numSoils,trial=trial_num)
+                hydrusEXE.saveOutput(soil, exp, 200, db="2 percent - 698 particle - new", numtrials=numSoils, trial=trial_num)
 
             # hydrusEXE.saveOutput(k,exp,200,'2 percent - test')
             print('Finished iteration: '+str(soil)+'.'+str(ind))
@@ -614,7 +645,7 @@ def setDataIN(ExpFileLocation,paramDict,label='*ASSIMILATION'):
 
 def getAllTexParams(prct='two', model='old', num=0, lmean=True, llog=False, perturb_prct=None):
 
-    srcDrive = "C:\\Derek\\"
+    srcDrive = "E:\\Derek\\"
     directory = srcDrive+"ProgrammingFolder\\Projects\\Clustering\\simpleSoilClustering\\"
 
     water = WC()

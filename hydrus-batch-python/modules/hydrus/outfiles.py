@@ -379,9 +379,10 @@ class NODINFFAST:
         self.directory = directory
         os.chdir(self.directory)
         self.dirList = os.listdir(self.directory)
+        self.dirList = [item.lower() for item in self.dirList]
         
         #Soil file of interest
-        self.OUT_index = self.dirList.index('NOD_INF.OUT')
+        self.OUT_index = self.dirList.index('NOD_INF.OUT'.lower())
 
         
     def readData(self):

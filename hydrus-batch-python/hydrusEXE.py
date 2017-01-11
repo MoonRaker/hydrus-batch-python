@@ -29,6 +29,8 @@ import time
 import pandas as pd
 
 
+sys.stdout = open('run_hydrus.out', 'w')
+
 class HYDRUS:
     
     def __init__(self,ExpFileLocation,exp):
@@ -88,13 +90,16 @@ class HYDRUS:
 ########################################################################################################################
 
 
-        try:
-            out = subprocess.check_output(args2, shell=False,stderr=subprocess.STDOUT)
-            # if noCMDWindow != 1:
-            #     print(out.decode("utf-8"))
-        except subprocess.CalledProcessError as e:
-            # pass
-            print(e.output.decode("utf-8")) 
+
+        out = subprocess.call(args2, stderr=sys.stdout, stdout=sys.stdout)
+
+        # try:
+        #     out = subprocess.check_output(args2,stderr=subprocess.STDOUT, )
+        #     if noCMDWindow != 1:
+        #         print(out.decode("utf-8"))
+        # except subprocess.CalledProcessError as e:
+        #     # pass
+        #     print(e.output.decode("utf-8")) 
 
 
 
@@ -184,7 +189,7 @@ class HYDRUS:
         
         #gets information about the assimilation to create the right folders/files
 
-        directory = "C:\\Derek\\ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\"+self.exp
+        directory = "E:\\Derek\\ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\"+self.exp
         
         resultsDir = directory +"\\"+parameter+"\\Trial= "+trial 
         
@@ -224,6 +229,7 @@ class HYDRUS:
         # exp = 'simpleClusterPerturbed'
 
         srcDrive = 'C:\\Derek\\'
+        srcDrive = 'E:\\Derek\\'
         # dataDir = srcDrive+'ProgrammingFolder\\Projects\\simpleSoilClustering\\PerturbedData\\Trial '+str(ind)+'\\'
         
         resultsDir = srcDrive+'ProgrammingFolder\\HYDRUS_Data\\Projects\\Results\\'
